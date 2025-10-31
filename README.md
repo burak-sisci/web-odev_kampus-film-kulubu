@@ -1,16 +1,30 @@
-# React + Vite
+# Kampüs Film Kulübü - Web Uygulaması
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bu proje, Web Teknolojileri ve Programlama dersi ödevi kapsamında React kullanılarak geliştirilmiş interaktif bir film/dizi arama platformudur.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Canlı Demo
 
-## React Compiler
+**Uygulamanın canlı versiyonuna aşağıdaki linkten ulaşabilirsiniz:**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### [https://web-odevkampus-film-kulubu.vercel.app/](https://web-odevkampus-film-kulubu.vercel.app/ )
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 🌟 Temel Özellikler
+
+*   **Dizi Arama:** TVMaze API'si üzerinden dizi arama.
+*   **Filtreleme:** Sonuçları türe ve dile göre filtreleme.
+*   **İzleme Listesi:** Beğenilen dizileri "Gösterime Girecekler" listesine ekleme/çıkarma.
+*   **Detay Sayfası:** Her dizi için bölüm listesini de içeren ayrıntılı bilgi sayfası.
+*   **Sayfalama:** Uzun sonuç listeleri arasında gezinme.
+
+### 🛠️ Kullanılan Teknolojiler
+
+*   **React** (Vite ile)
+*   **State Yönetimi:** `useReducer`
+*   **Asenkron İşlemler:** `useEffect`
+*   **API İstekleri:** `axios`
+*   **Yönlendirme (Routing):** `react-router-dom`
+*   **Dağıtım (Deployment):** Vercel
