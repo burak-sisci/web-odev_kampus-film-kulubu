@@ -5,50 +5,55 @@ import axios from 'axios';
 
 // Bileşenleri import et
 import SearchBox from '../components/SearchBox';
+import Filters from '../components/Filters';
 import TVList from '../components/TVList';
 import WatchlistPanel from '../components/WatchlistPanel';
+import Pagination from '../components/Pagination'; // YENİ: Pagination bileşenini import et
 import Footer from '../components/Footer';
 
-// 1. Başlangıç Durumu (Initial State)
+// Başlangıç Durumu
 const initialState = {
   loading: true,
   error: null,
   shows: [],
-  query: 'friends', // Başlangıç arama sorgusu
+  query: 'friends',
   watchlist: [],
+  filters: { genre: 'All', language: 'All' },
+  // YENİ: Sayfalama için state
+  pagination: { currentPage: 1, pageSize: 6 },
 };
 
-// 2. Reducer Fonksiyonu (State Güncelleme Merkezi)
+// Reducer Fonksiyonu
 const reducer = (state, action) => {
   switch (action.type) {
     case 'FETCH_INIT':
       return { ...state, loading: true, error: null };
     case 'FETCH_SUCCESS':
-      return { ...state, loading: false, shows: action.payload };
+      return { ...state, loading: false, shows: action.payload, pagination: { ...state.pagination, currentPage: 1 } }; // YENİ: Yeni veri geldiğinde sayfayı 1'e sıfırla
     case 'FETCH_FAILURE':
       return { ...state, loading: false, error: action.payload };
     case 'SET_QUERY':
       return { ...state, query: action.payload };
+    case 'SET_FILTERS':
+      return { ...state, filters: { ...state.filters, ...action.payload }, pagination: { ...state.pagination, currentPage: 1 } }; // YENİ: Filtre değiştiğinde sayfayı 1'e sıfırla
+    // YENİ: Sayfa numarasını değiştiren action
+    case 'SET_PAGE':
+      return { ...state, pagination: { ...state.pagination, currentPage: action.payload } };
     case 'ADD_WATCHLIST':
-      if (state.watchlist.find(item => item.show.id === action.payload.show.id)) {
-        return state; // Zaten varsa değişiklik yapma
-      }
+      if (state.watchlist.find(item => item.show.id === action.payload.show.id)) return state;
       return { ...state, watchlist: [...state.watchlist, action.payload] };
     case 'REMOVE_WATCHLIST':
-      return {
-        ...state,
-        watchlist: state.watchlist.filter(item => item.show.id !== action.payload),
-      };
+      return { ...state, watchlist: state.watchlist.filter(item => item.show.id !== action.payload) };
     default:
       return state;
   }
 };
 
-// 3. Ana Sayfa Bileşeni
+// Ana Sayfa Bileşeni
 function Home() {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  // 4. API'den Veri Çekme (useEffect)
+  // API'den Veri Çekme (Değişiklik yok)
   useEffect(() => {
     if (!state.query.trim()) {
       dispatch({ type: 'FETCH_SUCCESS', payload: [] });
@@ -56,32 +61,40 @@ function Home() {
     }
     dispatch({ type: 'FETCH_INIT' });
     axios.get(`https://api.tvmaze.com/search/shows?q=${state.query}` )
-      .then(response => {
-        dispatch({ type: 'FETCH_SUCCESS', payload: response.data });
-      })
-      .catch(error => {
-        dispatch({ type: 'FETCH_FAILURE', payload: error.message });
-      });
+      .then(response => dispatch({ type: 'FETCH_SUCCESS', payload: response.data }))
+      .catch(error => dispatch({ type: 'FETCH_FAILURE', payload: error.message }));
   }, [state.query]);
 
-  // 5. Olay Yöneticileri (Event Handlers)
-  const handleSearch = (newQuery) => {
-    dispatch({ type: 'SET_QUERY', payload: newQuery });
-  };
+  // Olay Yöneticileri
+  const handleSearch = (newQuery) => dispatch({ type: 'SET_QUERY', payload: newQuery });
+  const handleAddWatchlist = (show) => dispatch({ type: 'ADD_WATCHLIST', payload: show });
+  const handleRemoveWatchlist = (showId) => dispatch({ type: 'REMOVE_WATCHLIST', payload: showId });
+  const handleFilterChange = (filter) => dispatch({ type: 'SET_FILTERS', payload: filter });
+  // YENİ: Sayfa değiştirme handler'ı
+  const handlePageChange = (page) => dispatch({ type: 'SET_PAGE', payload: page });
 
-  const handleAddWatchlist = (show) => {
-    dispatch({ type: 'ADD_WATCHLIST', payload: show });
-  };
+  // Filtrelenmiş Dizi Listesi (Değişiklik yok)
+  const filteredShows = state.shows.filter(item => {
+    const { genre, language } = state.filters;
+    const show = item.show;
+    const genreMatch = genre === 'All' || (show.genres && show.genres.includes(genre));
+    const languageMatch = language === 'All' || show.language === language;
+    return genreMatch && languageMatch;
+  });
 
-  const handleRemoveWatchlist = (showId) => {
-    dispatch({ type: 'REMOVE_WATCHLIST', payload: showId });
-  };
+  // YENİ: Sayfalanmış Dizi Listesi
+  const { currentPage, pageSize } = state.pagination;
+  const totalShows = filteredShows.length;
+  const totalPages = Math.ceil(totalShows / pageSize);
+  const paginatedShows = filteredShows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  // 6. Arayüz (JSX)
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', fontFamily: 'Arial' }}>
       <h1>Kampüs Film Kulübü</h1>
-      <SearchBox onSearch={handleSearch} initialQuery={state.query} />
+      <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '20px' }}>
+        <SearchBox onSearch={handleSearch} initialQuery={state.query} />
+        <Filters onFilterChange={handleFilterChange} />
+      </div>
       <div style={{ display: 'flex', gap: '30px', marginTop: '20px' }}>
         <div style={{ flex: 3 }}>
           {state.loading ? (
@@ -89,7 +102,16 @@ function Home() {
           ) : state.error ? (
             <p>Hata: {state.error}</p>
           ) : (
-            <TVList shows={state.shows} onAddWatchlist={handleAddWatchlist} />
+            <>
+              {/* YENİ: TVList'e sayfalanmış dizileri gönder */}
+              <TVList shows={paginatedShows} onAddWatchlist={handleAddWatchlist} />
+              {/* YENİ: Pagination bileşenini ekle */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </>
           )}
         </div>
         <div style={{ flex: 1 }}>

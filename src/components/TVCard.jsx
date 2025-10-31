@@ -1,8 +1,9 @@
 // src/components/TVCard.jsx
 import React from 'react';
+import { Link } from 'react-router-dom'; // Link'i import et
 
 function TVCard({ show, onAddWatchlist }) {
-  const { name, image, summary, rating } = show.show;
+  const { id, name, image, summary, rating } = show.show;
   const shortSummary = summary ? summary.split(' ').slice(0, 20).join(' ') + '...' : 'Özet mevcut değil.';
   
   return (
@@ -13,9 +14,14 @@ function TVCard({ show, onAddWatchlist }) {
         <p><b>Puan:</b> {rating.average || 'N/A'}</p>
         <p dangerouslySetInnerHTML={{ __html: shortSummary }} />
         <button onClick={( ) => onAddWatchlist(show)} style={{ marginRight: '10px' }}>Kısa Listeye Ekle</button>
-        <button>Detay</button>
+        
+        {/* Butonu Link'e dönüştür */}
+        <Link to={`/show/${id}`}>
+          <button>Detay</button>
+        </Link>
       </div>
     </div>
   );
 }
+
 export default TVCard;

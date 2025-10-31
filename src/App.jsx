@@ -1,15 +1,18 @@
 // src/App.jsx
-
 import React from 'react';
-import Home from './pages/Home'; // Home sayfasını import et
+import { Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import ShowDetail from './pages/ShowDetail';
 
 function App() {
-  // Şimdilik sadece Home sayfasını gösteriyoruz.
-  // İleride buraya yönlendirme (routing) mantığı gelebilir.
   return (
-    <div>
-      <Home />
-    </div>
+    <Routes>
+      {/* Ana yol (/) Home sayfasını göstersin */}
+      <Route path="/" element={<Home />} />
+      
+      {/* Detay yolu (/show/:id) ShowDetail sayfasını göstersin */}
+      <Route path="/show/:id" element={<ShowDetail />} />
+    </Routes>
   );
 }
 
